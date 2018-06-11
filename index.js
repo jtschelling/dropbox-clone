@@ -1,4 +1,5 @@
 const http = require('http');
+
 const port = process.env.PORT || 5000;
 const server = http.createServer((req, res) => {
   res.statusCode = 200;
@@ -6,5 +7,6 @@ const server = http.createServer((req, res) => {
   res.end('Hello World\n');
 });
 server.listen(port, () => {
+  // eslint-disable-next-line
   console.log(`Server running on ${port}/`);
 });
