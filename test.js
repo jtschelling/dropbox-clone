@@ -9,7 +9,7 @@ test('responds to requests', (t) => {
       child.kill();
       t.false(error);
       t.equal(response.statusCode, 200);
-      t.notEqual(body.indexOf('Hello World'), -1);
+      t.notEqual(body.indexOf('testing new message'), -1);
     });
   });
 });
