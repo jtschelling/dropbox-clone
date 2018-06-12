@@ -5,7 +5,7 @@ const port = process.env.PORT || 5000;
 const server = http.createServer((req, res) => {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
-  res.end('testing new message\n');
+  res.end('another message\n');
 });
 server.listen(port, () => {
   // eslint-disable-next-line
