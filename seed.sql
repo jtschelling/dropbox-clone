@@ -1,2 +1,2 @@
 CREATE TABLE testingtable (name text);
-INSERT INTO hellotable values ('testing stage');
+INSERT INTO testingtable values ('testing stage');
