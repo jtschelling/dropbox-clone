@@ -16,40 +16,58 @@
 
     <script>
     /*
-      Function to get the temporary signed request from the app.
-      If request successful, continue to upload the file using this signed
-      request.
+    * sends a get request to /auth on the server
+    * recieves a 200 on successful authentication
+    * 401 on incorrect passwords
+    * 500 on server error
+    * 
+    * TODO: figure out more about xmlhttprequest
     */
     function authorizeUser(){
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', `/auth?username=${username}&password=${password}`);
-        xhr.onreadystatechange = () => {
-            if(xhr.readyState === 4){
-                if(xhr.status === 200){
-                    alert('logged in');
-                } else {
-                    alert('error with login');
-                }
-            }
-        };
-        xhr.send();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', `/auth?username=${username}&password=${password}`);
+      xhr.onreadystatechange = () => {
+          if(xhr.readyState === 4){
+              switch(xhr.status) {
+                  case 200:
+                      alert('logged in');
+                      break;
+                  case 401:
+                      alert('incorrect password or user not found');
+                      break;
+                  case 500:
+                      alert('server error');
+                      break;
+                  default:
+                      alert('unknown error');
+              }
+          }
+      };
+      xhr.send();
     }
 
+    /*
+    * TODO: REROUTE TO /HOMEPAGE ON SUCCESS
+    * trying to route to the /homepage but i can't figure out
+    * how to do it right after a successful login
+    * 
+    * on client or on server?
+    */
     function goToHomepage(){
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', '/homepage');
-        xhr.onreadystatechange = () => {
-            if(xhr.readyState === 4){
-                if(xhr.status === 200){
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', '/homepage');
+      xhr.onreadystatechange = () => {
+          if(xhr.readyState === 4){
+            if(xhr.status === 200){
                     
-                } else {
-                    alert('error with something');
-                }
+            } else {
+              alert('error with something');
             }
-        };
-        xhr.send();
+          }
+      };
+      xhr.send();
     }
     </script>
   </body>

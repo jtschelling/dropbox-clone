@@ -11,20 +11,21 @@
 
     <script>
     function saveDetails(file, username){
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', `/save-details?file-name=${file.name}&file-type=${file.type}
-                    &username=${username}`);
-        xhr.onreadystatechange = () => {
-            if(xhr.readyState === 4){
-                if(xhr.status === 200){
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `/save-details?file-name=${file.name}&file-type=${file.type}
+                &username=${username}`);
+      xhr.onreadystatechange = () => {
+          if(xhr.readyState === 4){
+            if(xhr.status === 200){
 
-                }
-                else{
-                    alert('could not update server');
-                }
             }
-        }
+            else{
+              alert('could not update server');
+            }
+          }
+      }
     }
+    
     /*
       Function to carry out the actual PUT request to S3 using the signed request from the app.
     */
