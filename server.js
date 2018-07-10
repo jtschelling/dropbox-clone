@@ -3,17 +3,26 @@ const aws = require('aws-sdk');
 const ejs = require('ejs');
 const express = require('express');
 
-// variables
+/*
+  * you can only use a postgresql api client once,
+  * when you call client.end() you have to new pg.Client()
+  * each time you want to access the db.
+  * i had to declare this here because each database access
+  * takes place in a mutliple use express response?
+  *
+*/
 let client;
 
-// exit cleanly on SIGINT
+/*
+  * TODO: make the app clean itself up nicely on exit
+*/
 process.on('SIGINT', () => {
   // eslint-disable-next-line
   console.log('dickebute');
   process.exit(0);
 });
 
-// SETUP BUCKET CONFIG
+// SETUP AWS S3 BUCKET & CONFIGURATIONS
 const S3_BUCKET = process.env.S3_BUCKET_NAME;
 aws.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -22,7 +31,7 @@ aws.config.update({
 });
 const s3 = new aws.S3();
 
-// EXPRESS SETUP
+// SETUP EXPRESS
 const app = express();
 app.set('views', './views');
 app.use(express.static('./public'));
@@ -42,6 +51,35 @@ app.get('/', (req, res) => res.render('login.html'));
 
 // USER HOMEPAGE
 app.get('/homepage', (req, res) => res.render('homepage.html'));
+
+/*
+  * api for authenicating a user's credentials against
+  * the postgresql database 'users' table
+  *
+*/
+app.get('/auth', (req, res) => {
+  res.statusCode = 401;
+  const { username, password } = req.query;
+
+  // query that returns true if $password matches $username and false if it does not match
+  const query = `SELECT EXISTS(SELECT * FROM users WHERE email='${username}' AND password=crypt('${password}',password))`;
+
+  // a new client object needs to be created each db access
+  client = new pg.Client(process.env.DATABASE_URL);
+  client.connect();
+
+  //
+  client.query(query, (err, queryres) => {
+    if (queryres.rows[0].exists === true) {
+      res.statusCode = 200;
+      res.end();
+    } else {
+      res.statusCode = 401;
+      res.end();
+    }
+    client.end();
+  });
+});
 
 /*
  * Respond to GET requests to /sign-s3.
@@ -71,28 +109,6 @@ app.get('/sign-s3', (req, res) => {
     };
     res.write(JSON.stringify(returnData));
     res.end();
-  });
-});
-
-/* VERIFY USER IDENTITY IN DATABASE */
-app.get('/auth', (req, res) => {
-  res.statusCode = 401;
-  const { username, password } = req.query;
-
-  const query = `SELECT EXISTS(SELECT * FROM users WHERE email='${username}' AND password=crypt('${password}',password))`;
-
-  client = new pg.Client(process.env.DATABASE_URL);
-  client.connect();
-
-  client.query(query, (err, queryres) => {
-    if (queryres.rows[0].exists === true) {
-      res.statusCode = 200;
-      res.end();
-    } else {
-      res.statusCode = 401;
-      res.end();
-    }
-    client.end();
   });
 });
 
