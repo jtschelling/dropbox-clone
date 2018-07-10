@@ -3,6 +3,9 @@ const aws = require('aws-sdk');
 const ejs = require('ejs');
 const express = require('express');
 
+// variables
+let client;
+
 // exit cleanly on SIGINT
 process.on('SIGINT', () => {
   // eslint-disable-next-line
@@ -35,7 +38,7 @@ app.listen(port, () => {
 /* ROUTING LOGIC BELOW */
 
 // LOGIN PAGE
-app.get('/', (req,res) => res.render('login.html'));
+app.get('/', (req, res) => res.render('login.html'));
 
 // USER HOMEPAGE
 app.get('/homepage', (req, res) => res.render('homepage.html'));
@@ -53,17 +56,18 @@ app.get('/sign-s3', (req, res) => {
     Key: fileName,
     Expires: 60,
     ContentType: fileType,
-    ACL: 'public-read'
+    ACL: 'public-read',
   };
 
   s3.getSignedUrl('putObject', s3Params, (err, data) => {
-    if(err){
+    if (err) {
+      // eslint-disable-next-line
       console.log(err);
-      return res.end();
+      res.end();
     }
     const returnData = {
       signedRequest: data,
-      url: `https://${S3_BUCKET}.s3.amazonaws.com/${fileName}`
+      url: `https://${S3_BUCKET}.s3.amazonaws.com/${fileName}`,
     };
     res.write(JSON.stringify(returnData));
     res.end();
@@ -73,16 +77,15 @@ app.get('/sign-s3', (req, res) => {
 /* VERIFY USER IDENTITY IN DATABASE */
 app.get('/auth', (req, res) => {
   res.statusCode = 401;
-  const username = req.query['username'];
-  const password = req.query['password'];
+  const { username, password } = req.query;
 
-  const query = 'SELECT EXISTS(SELECT * FROM users WHERE email=\'' + username + '\' AND password=crypt(\'' + password + '\',password))';
+  const query = `SELECT EXISTS(SELECT * FROM users WHERE email='${username}' AND password=crypt('${password}',password))`;
 
   client = new pg.Client(process.env.DATABASE_URL);
-  client.connect()
+  client.connect();
 
   client.query(query, (err, queryres) => {
-    if(queryres.rows[0].exists == true) {
+    if (queryres.rows[0].exists === true) {
       res.statusCode = 200;
       res.end();
     } else {
@@ -93,9 +96,9 @@ app.get('/auth', (req, res) => {
   });
 });
 
-/*
- * Respond to POST requests to /save-details.
- */
-app.post('/save-details', (req, res) => {
-  // TODO: Read POSTed form data and do something useful
-});
+// /*
+//  * Respond to POST requests to /save-details.
+//  */
+// app.post('/save-details', (req, res) => {
+//   // TODO: Read POSTed form data and do something useful
+// });
