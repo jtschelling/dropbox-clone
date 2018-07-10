@@ -1,0 +1,56 @@
+<html>
+  <body>
+
+    <h1>Login</h1>
+
+    <hr>
+
+    <form>
+            Email:<br>
+            <input type="text" name="username" id='username'><br>
+            Password:<br>
+            <input type="text" name="password" id='password'>
+    </form>
+
+    <button onclick="authorizeUser()">Login</button>
+
+    <script>
+    /*
+      Function to get the temporary signed request from the app.
+      If request successful, continue to upload the file using this signed
+      request.
+    */
+    function authorizeUser(){
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', `/auth?username=${username}&password=${password}`);
+        xhr.onreadystatechange = () => {
+            if(xhr.readyState === 4){
+                if(xhr.status === 200){
+                    alert('logged in');
+                } else {
+                    alert('error with login');
+                }
+            }
+        };
+        xhr.send();
+    }
+
+    function goToHomepage(){
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', '/homepage');
+        xhr.onreadystatechange = () => {
+            if(xhr.readyState === 4){
+                if(xhr.status === 200){
+                    
+                } else {
+                    alert('error with something');
+                }
+            }
+        };
+        xhr.send();
+    }
+    </script>
+  </body>
+</html>
