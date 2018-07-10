@@ -9,7 +9,7 @@ const express = require('express');
   * each time you want to access the db.
   * i had to declare this here because each database access
   * takes place in a mutliple use express response?
-  * 
+  *
 */
 let client;
 
@@ -52,10 +52,10 @@ app.get('/', (req, res) => res.render('login.html'));
 // USER HOMEPAGE
 app.get('/homepage', (req, res) => res.render('homepage.html'));
 
-/* 
+/*
   * api for authenicating a user's credentials against
   * the postgresql database 'users' table
-  * 
+  *
 */
 app.get('/auth', (req, res) => {
   res.statusCode = 401;
@@ -68,7 +68,7 @@ app.get('/auth', (req, res) => {
   client = new pg.Client(process.env.DATABASE_URL);
   client.connect();
 
-  // 
+  //
   client.query(query, (err, queryres) => {
     if (queryres.rows[0].exists === true) {
       res.statusCode = 200;
