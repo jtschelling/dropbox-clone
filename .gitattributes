@@ -1,2 +1,2 @@
 *.js text eol=lf
-*.js linguist-language=Javascript
+views/* linguist-vendored
