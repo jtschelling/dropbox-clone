@@ -1,7 +1,17 @@
 {
-  "name": "testing",
+  "name": "dropbox-clone",
   "version": "1.0.0",
-  "description": "",
+  "description": "personal file hosting with similar features to dropbox",
+  "homepage": "http://filestorage.schelling.io",
+  "author": {
+    "name": "JT Schelling",
+    "email": "jt@schelling.io"
+  },
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jtschelling/dropbox-clone.git"
+  },
   "engines": {
     "node": "8.11.2"
   },
@@ -12,8 +22,6 @@
     "lint-fix": "./node_modules/.bin/eslint --fix server.js",
     "test": "node test.js"
   },
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
     "eslint": "4.19.1",
     "eslint-config-airbnb-base": "12.1.0",
@@ -22,9 +30,10 @@
     "tape": "4.9.1"
   },
   "dependencies": {
-    "aws-sdk": "^2.259.1",
-    "ejs": "2.x",
-    "express": "^4.16.3",
+    "aws-sdk": "2.259.1",
+    "ejs": "2.6.1",
+    "express": "4.16.3",
+    "helmet": "3.12.1",
     "pg": "7.4.3"
   }
 }
