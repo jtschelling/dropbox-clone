@@ -1,2 +1,2 @@
 *.js text eol=lf
-linguist-language=Javascript
+*.js linguist-language=Javascript
