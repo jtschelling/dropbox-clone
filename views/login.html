@@ -31,8 +31,9 @@
       xhr.onreadystatechange = () => {
           if(xhr.readyState === 4){
               switch(xhr.status) {
-                  case 200:
-                      alert('logged in');
+                  case 302:
+                      const response = JSON.parse(xhr.responseText);
+                      window.location.replace(response.url);
                       break;
                   case 401:
                       alert('incorrect password or user not found');

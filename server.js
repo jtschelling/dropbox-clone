@@ -2,6 +2,7 @@ const pg = require('pg');
 const aws = require('aws-sdk');
 const ejs = require('ejs');
 const express = require('express');
+const helmet = require('helmet');
 
 /*
   * you can only use a postgresql api client once,
@@ -33,8 +34,8 @@ const s3 = new aws.S3();
 
 // SETUP EXPRESS
 const app = express();
+app.use(helmet());
 app.set('views', './views');
-app.use(express.static('./public'));
 app.engine('html', ejs.renderFile);
 
 const port = process.env.PORT || 5000;
@@ -55,7 +56,6 @@ app.get('/homepage', (req, res) => res.render('homepage.html'));
 /*
   * api for authenicating a user's credentials against
   * the postgresql database 'users' table
-  *
 */
 app.get('/auth', (req, res) => {
   res.statusCode = 401;
@@ -70,8 +70,17 @@ app.get('/auth', (req, res) => {
 
   //
   client.query(query, (err, queryres) => {
-    if (queryres.rows[0].exists === true) {
-      res.statusCode = 200;
+    if (err) {
+      // eslint-disable-next-line
+      console.log(`error: ${ err } has occurred`);
+      res.statusCode = 500;
+      res.end();
+    } else if (queryres.rows[0].exists === true) {
+      res.statusCode = 302;
+      const returnData = {
+        url: `${req.protocol}://${req.get('host')}/homepage`,
+      };
+      res.write(JSON.stringify(returnData));
       res.end();
     } else {
       res.statusCode = 401;
