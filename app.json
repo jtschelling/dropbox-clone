@@ -1,7 +1,7 @@
 {
   "name": "node-testing",
   "scripts": {
-    "postdeploy": "psql $DATABASE_URL -f seed.sql"
+    "postdeploy": "psql $DATABASE_URL -f db/seed.sql"
   },
   "env": {
   },
