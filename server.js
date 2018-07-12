@@ -1,9 +1,8 @@
-// const pg = require('pg');
 const db = require('./db');
 const aws = require('aws-sdk');
-const ejs = require('ejs');
 const express = require('express');
-const helmet = require('helmet');
+const passport = require('passport');
+const users = require('./app/users');
 
 /*
   * TODO: make the app clean itself up nicely on exit
@@ -33,17 +32,13 @@ const s3 = new aws.S3();
   *
 */
 // Begin
+const port = process.env.PORT || 5000;
 const app = express();
 
-//  View Engine
-app.set('views', './views');
-app.engine('html', ejs.renderFile);
-
-// Express Middleware
-app.use(helmet());
+require('./config/passport')(passport, db);
+require('./config/express')(app, passport, db.pool);
 
 // Start Express listener
-const port = process.env.PORT || 5000;
 app.listen(port, () => {
   // eslint-disable-next-line
   console.log(`app listening on port ${port}`);
@@ -53,10 +48,15 @@ app.listen(port, () => {
 /* ROUTING LOGIC BELOW */
 
 /*
+  * ROOT URL
+  *
+*/
+app.get('/', (req, res) => res.redirect('/login'));
+/*
   * LOGIN PAGE
   *
 */
-app.get('/', (req, res) => res.render('login.html'));
+app.get('/login', (req, res) => res.render('login.html'));
 
 /*
   * User dashboard generated from postgres database
@@ -65,31 +65,30 @@ app.get('/', (req, res) => res.render('login.html'));
   *                 User defined filename
   *                 filetype
 */
-app.get('/dashboard', (req, res) => res.render('dashboard.html'));
+app.get('/dashboard', passport.authenticate('local', { failureRedirect: 'login' }), users.login, (req, res) => {
+  res.render('dashboard.html');
+});
 
 /*
   * api for authenicating a user's credentials against
   * the postgresql database 'users' table
   *
 */
-app.get('/auth', (req, res) => {
+app.post('/auth', (req, res) => {
   res.statusCode = 401;
-  const { username, password } = req.query;
+  const { username, password } = req.body;
 
-  db.compare_pass(username, password, (resCode) => {
-    if (resCode === -1) {
+  db.compare_pass(username, password, (compRes) => {
+    if (compRes.code === 1) {
       // eslint-disable-next-line
-      console.log(`${ err }\nOccurred in server/get/auth db.query()`);
-      res.statusCode = 500;
-      res.end();
-    } else if (resCode === 0) {
+      console.log('correct login');
       res.statusCode = 302;
       const returnData = {
         url: `${req.protocol}://${req.get('host')}/dashboard`,
       };
       res.write(JSON.stringify(returnData));
       res.end();
-    } else if (resCode === 1) {
+    } else if (compRes.code === 0) {
       res.statusCode = 401;
       res.end();
     } else {
@@ -130,10 +129,3 @@ app.get('/sign-s3', (req, res) => {
     res.end();
   });
 });
-
-// /*
-//  * Respond to POST requests to /save-details.
-//  */
-// app.post('/save-details', (req, res) => {
-//   // TODO: Read POSTed form data and do something useful
-// });

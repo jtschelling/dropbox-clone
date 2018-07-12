@@ -3,16 +3,17 @@ const { Pool } = require('pg');
 const pool = new Pool(process.env.DATABASE_URL);
 
 module.exports = {
+    pool,
     compare_pass: (username, password, callback) => {
-        pool.query(`SELECT EXISTS(SELECT * FROM users WHERE email=$1 AND password=crypt($2,password))`, [username, password], (err, res) => {
+        pool.query(`SELECT * FROM users WHERE username=$1 AND password=crypt($2,password)`, [username, password], (err, res) => {
             if (err) {
                 // eslint-disable-next-line
                 console.log(`${ err }\nOccurred in db.compare_pass()`);
-                callback(-1);
-            } else if (res.rows[0].exists === true) {
-                callback(0);
-            } else if (res.rows[0].exists === false) {
-                callback(1);
+                callback({ code: -1 });
+            } else if (res.rows.length > 0) {
+                callback({ id: res.rows[0].id, username: res.rows[0].username, type: res.rows[0].type, code: 1});
+            } else {
+                callback({code: 0});
             }
         })
     },
