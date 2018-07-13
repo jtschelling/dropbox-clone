@@ -59,7 +59,7 @@
     */
     function goToHomepage(){
       const xhr = new XMLHttpRequest();
-      xhr.open('GET', '/homepage');
+      xhr.open('GET', '/dashboard');
       xhr.onreadystatechange = () => {
           if(xhr.readyState === 4){
             if(xhr.status === 200){

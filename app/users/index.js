@@ -1,21 +1,21 @@
 module.exports = {
 	login: (req, res) => {
-		const { user } = req
+		const { user } = req;
 
-		res.json(user)
+		res.json(user);
 	},
 
 	logout: (req, res, next) => {
 		req.session.destroy((err) => {
-			if(err) return next(err)
+			if(err) return next(err);
 
-			req.logout()
+			req.logout();
 
-			res.sendStatus(200)
-		})
+			res.sendStatus(200);
+		});
 	},
 
 	ping: function(req, res) {
-		res.sendStatus(200)
+		res.sendStatus(200);
 	}
 }

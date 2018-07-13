@@ -2,7 +2,7 @@ const db = require('./db');
 const aws = require('aws-sdk');
 const express = require('express');
 const passport = require('passport');
-const users = require('./app/users');
+const { requiresLogin } = require('./config/middleware/authorization');
 
 /*
   * TODO: make the app clean itself up nicely on exit
@@ -52,6 +52,7 @@ app.listen(port, () => {
   *
 */
 app.get('/', (req, res) => res.redirect('/login'));
+
 /*
   * LOGIN PAGE
   *
@@ -65,7 +66,7 @@ app.get('/login', (req, res) => res.render('login.html'));
   *                 User defined filename
   *                 filetype
 */
-app.get('/dashboard', passport.authenticate('local', { failureRedirect: 'login' }), users.login, (req, res) => {
+app.get('/dashboard', requiresLogin, (req, res) => {
   res.render('dashboard.html');
 });
 
@@ -74,28 +75,13 @@ app.get('/dashboard', passport.authenticate('local', { failureRedirect: 'login' 
   * the postgresql database 'users' table
   *
 */
-app.post('/auth', (req, res) => {
-  res.statusCode = 401;
-  const { username, password } = req.body;
-
-  db.compare_pass(username, password, (compRes) => {
-    if (compRes.code === 1) {
-      // eslint-disable-next-line
-      console.log('correct login');
-      res.statusCode = 302;
-      const returnData = {
-        url: `${req.protocol}://${req.get('host')}/dashboard`,
-      };
-      res.write(JSON.stringify(returnData));
-      res.end();
-    } else if (compRes.code === 0) {
-      res.statusCode = 401;
-      res.end();
-    } else {
-      res.statusCode = 500;
-      res.end();
-    }
-  });
+app.post('/auth', passport.authenticate('local'), (req, res) => {
+  res.statusCode = 302;
+  const returnData = {
+    url: `${req.protocol}://${req.get('host')}/dashboard`,
+  };
+  res.write(JSON.stringify(returnData));
+  res.end();
 });
 
 /*

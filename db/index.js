@@ -26,7 +26,7 @@ module.exports = {
         return pool.query(text, params, (err, res) => {
             const duration = Date.now() - start;
             // eslint-disable-next-line
-            console.log(`executed query ${ text }`);
+            console.log(`executed query ${ text }`, params);
             // done();
             callback(err, res);
         });

@@ -1,8 +1,10 @@
 module.exports = {
 	requiresLogin: (req, res, next) => {
-		if (req.user) return next()
-
-		res.sendStatus(401)
+		if (req.user) {
+			return next()
+		} else {
+			res.redirect('/login');
+		}
 	},
 
 	requiresAdmin: (req, res, next) => {

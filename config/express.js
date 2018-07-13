@@ -17,7 +17,7 @@ module.exports = (app, passport, pool) => {
 
     // Express Middleware
     app.use(helmet());
-
+    
     app.use(bodyParser.json());
 	app.use(bodyParser.urlencoded({ extended: true }));
     app.use(expressValidator());
