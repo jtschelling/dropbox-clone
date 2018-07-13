@@ -18,9 +18,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "test": "node test.js",
     "lint": "./node_modules/.bin/eslint server.js",
-    "lint-fix": "./node_modules/.bin/eslint --fix server.js",
-    "test": "node test.js"
+    "lint-fix": "./node_modules/.bin/eslint --fix server.js"
   },
   "devDependencies": {
     "eslint": "4.19.1",
