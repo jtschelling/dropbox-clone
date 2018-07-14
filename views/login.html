@@ -1,4 +1,7 @@
 <html>
+  <head>
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+  </head>
   <body>
 
     <h1>Login</h1>
@@ -12,7 +15,7 @@
             <input type="text" name="password" id='password'>
     </form>
 
-    <button onclick="authorizeUser()">Login</button>
+    <button type="button" class="btn btn-primary" onclick="authorizeUser()">Login</button>
 
     <script>
     /*
@@ -72,5 +75,8 @@
       xhr.send();
     }
     </script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
   </body>
 </html>

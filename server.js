@@ -5,13 +5,11 @@ const passport = require('passport');
 const { requiresLogin } = require('./config/middleware/authorization');
 
 /*
-  * TODO: make the app clean itself up nicely on exit
+  * TODO: clean up nicely on exit
   *
 */
 process.on('SIGINT', () => {
   db.end();
-  // eslint-disable-next-line
-  console.log('dickebute');
   process.exit(0);
 });
 
