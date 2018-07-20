@@ -88,6 +88,7 @@
     */
     function uploadFile(file, signedRequest, url){
       const xhr = new XMLHttpRequest();
+      console.log(file);
       xhr.open('PUT', signedRequest);
       xhr.onreadystatechange = () => {
         if(xhr.readyState === 4){
@@ -95,6 +96,7 @@
             
           }
           else{
+            console.log(xhr.responseText);
             alert('Could not upload file.');
           }
         }
