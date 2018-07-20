@@ -89,7 +89,8 @@
     function uploadFile(file, signedRequest, url){
       const xhr = new XMLHttpRequest();
       console.log(file);
-      xhr.open('PUT', signedRequest);
+      xhr.open('POST', `/save-details?file-name=${file.name}&file-type=${file.type}
+-                &username=${username}`);
       xhr.onreadystatechange = () => {
         if(xhr.readyState === 4){
           if(xhr.status === 200){
