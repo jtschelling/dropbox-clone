@@ -57,6 +57,16 @@ app.get('/', (req, res) => res.redirect('/login'));
 */
 app.get('/login', (req, res) => res.render('login.html'));
 
+app.get('/logout', (req, res) => {
+  req.logout();
+  res.statusCode = 302;
+  const returnData = {
+    url: `${req.protocol}://${req.get('host')}/login`,
+  };
+  res.write(JSON.stringify(returnData));
+  res.end();
+});
+
 /*
   * User dashboard generated from postgres database
   * Values needed:  RefID for AWS S3 file

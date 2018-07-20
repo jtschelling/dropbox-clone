@@ -7,22 +7,69 @@
   </head>
   <body>
     <div class="container">
+      <h1>Dashboard</h1>
 
+      <hr>
+  
+      <form>
+        <input type="file" id="file-input">
+        <button onclick="initUpload()">upload selected file</button>
+      </form>
+
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Type</th>
+            <th scope="col">Date Uploaded</th>
+            <th scope="col">Size</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">summer_resume</th>
+            <td>pdf</td>
+            <td>07/18/2018</td>
+            <td>102kb</td>
+          </tr>
+          <tr>
+            <th scope="row">the_room</th>
+            <td>mp4</td>
+            <td>06/24/2018</td>
+            <td>2.4Gb</td>
+          </tr>
+          <tr>
+            <th scope="row">this_page</th>
+            <td>html</td>
+            <td>07/07/2018</td>
+            <td>2kb</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button type="button" class="btn btn-primary" onclick="logoutUser()">Logout</button>
     </div>
 
-    <h1>Upload a file</h1>
-
-    <hr>
-
-    <input type="file" id="file-input">
-
-    <button onclick="initUpload()">upload selected file</button>
-
     <script>
+    function logoutUser() {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', `/logout`);
+      xhr.onreadystatechange = () => {
+        if(xhr.readyState === 4) {
+          if(xhr.status === 302) {
+            const response = JSON.parse(xhr.responseText);
+            window.location.replace(response.url);
+          } else {
+            alert('server error');
+          }
+        }
+      };
+      xhr.send();
+    };
+
     function saveDetails(file, username){
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', `/save-details?file-name=${file.name}&file-type=${file.type}
-                &username=${username}`);
+      xhr.open('POST', `/save-upload-details`);
       xhr.onreadystatechange = () => {
           if(xhr.readyState === 4){
             if(xhr.status === 200){
@@ -32,14 +79,16 @@
               alert('could not update server');
             }
           }
-      }
-    }
+      };
+      xhr.send(``);
+    };
     
     /*
       Function to carry out the actual PUT request to S3 using the signed request from the app.
     */
     function uploadFile(file, signedRequest, url){
       const xhr = new XMLHttpRequest();
+      console.log(file);
       xhr.open('PUT', signedRequest);
       xhr.onreadystatechange = () => {
         if(xhr.readyState === 4){
@@ -47,12 +96,13 @@
             
           }
           else{
+            console.log(xhr.responseText);
             alert('Could not upload file.');
           }
         }
       };
       xhr.send(file);
-    }
+    };
     /*
       Function to get the temporary signed request from the app.
       If request successful, continue to upload the file using this signed
@@ -73,7 +123,7 @@
         }
       };
       xhr.send();
-    }
+    };
     /*
      Function called when file input updated. If there is a file selected, then
      start upload procedure by asking for a signed request from the app.
@@ -85,7 +135,7 @@
         return alert('No file selected.');
       }
       getSignedRequest(file);
-    }
+    };
     </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
