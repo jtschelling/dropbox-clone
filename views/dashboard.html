@@ -68,9 +68,11 @@
       xhr.send();
     }
 
-    function saveDetails(file, username){
+    function saveDetails(file, fileKey){
+      console.log(`should have made it here...\n${file.name}`);
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', `/save-upload-details`);
+      xhr.open('POST', `/save-file-details`, true);
+      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
       xhr.onreadystatechange = () => {
           if(xhr.readyState === 4){
             if(xhr.status === 200){
@@ -81,20 +83,20 @@
             }
           }
       };
-      xhr.send(``);
+      xhr.send(`filename=${file.name}&filekey=${fileKey}&filetype=${file.type}&filesize=${file.size}`);
     }
     
     /*
       Function to carry out the actual PUT request to S3 using the signed request from the app.
     */
-    function uploadFile(file, signedRequest, url){
+    function uploadFile(file, signedRequest, url, fileKey){
       const xhr = new XMLHttpRequest();
       console.log(file);
       xhr.open('PUT', signedRequest);
       xhr.onreadystatechange = () => {
         if(xhr.readyState === 4){
           if(xhr.status === 200){
-            
+            saveDetails(file, fileKey);
           }
           else{
             alert('Could not upload file.');
@@ -115,7 +117,7 @@
         if(xhr.readyState === 4){
           if(xhr.status === 200){
             const response = JSON.parse(xhr.responseText);
-            uploadFile(file, response.signedRequest, response.url);
+            uploadFile(file, response.signedRequest, response.url, response.fileKey);
           }
           else{
             alert('Could not get signed URL.');
