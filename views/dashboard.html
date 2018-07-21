@@ -13,8 +13,9 @@
   
       <form>
         <input type="file" id="file-input">
-        <button onclick="initUpload()">upload selected file</button>
       </form>
+      
+      <button type="submit" onclick="initUpload()">upload selected file</button>
 
       <table class="table table-hover">
         <thead>
@@ -65,7 +66,7 @@
         }
       };
       xhr.send();
-    };
+    }
 
     function saveDetails(file, username){
       const xhr = new XMLHttpRequest();
@@ -81,7 +82,7 @@
           }
       };
       xhr.send(``);
-    };
+    }
     
     /*
       Function to carry out the actual PUT request to S3 using the signed request from the app.
@@ -89,21 +90,19 @@
     function uploadFile(file, signedRequest, url){
       const xhr = new XMLHttpRequest();
       console.log(file);
-      xhr.open('POST', `/save-details?file-name=${file.name}&file-type=${file.type}
--                &username=${username}`);
+      xhr.open('PUT', signedRequest);
       xhr.onreadystatechange = () => {
         if(xhr.readyState === 4){
           if(xhr.status === 200){
             
           }
           else{
-            console.log(xhr.responseText);
             alert('Could not upload file.');
           }
         }
       };
       xhr.send(file);
-    };
+    }
     /*
       Function to get the temporary signed request from the app.
       If request successful, continue to upload the file using this signed
@@ -124,7 +123,7 @@
         }
       };
       xhr.send();
-    };
+    }
     /*
      Function called when file input updated. If there is a file selected, then
      start upload procedure by asking for a signed request from the app.
@@ -136,7 +135,7 @@
         return alert('No file selected.');
       }
       getSignedRequest(file);
-    };
+    }
     </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
