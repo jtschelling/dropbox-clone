@@ -3,6 +3,7 @@ const aws = require('aws-sdk');
 const express = require('express');
 const passport = require('passport');
 const { requiresLogin } = require('./config/middleware/authorization');
+const crypto = require('crypto');
 
 /*
   * TODO: clean up nicely on exit
@@ -98,12 +99,13 @@ app.post('/auth', passport.authenticate('local'), (req, res) => {
  * the anticipated URL of the image.
  *
 */
-app.get('/sign-s3', (req, res) => {
-  const fileName = req.query['file-name'];
+app.get('/sign-s3', requiresLogin, (req, res) => {
   const fileType = req.query['file-type'];
+  const fileKey = crypto.randomBytes(8).toString('hex');
+
   const s3Params = {
     Bucket: S3_BUCKET,
-    Key: fileName,
+    Key: fileKey,
     Expires: 60,
     ContentType: fileType,
     ACL: 'public-read',
@@ -117,9 +119,18 @@ app.get('/sign-s3', (req, res) => {
     }
     const returnData = {
       signedRequest: data,
-      url: `https://${S3_BUCKET}.s3.amazonaws.com/${fileName}`,
+      fileKey,
+      url: `https://${S3_BUCKET}.s3.amazonaws.com/${fileKey}`,
     };
     res.write(JSON.stringify(returnData));
     res.end();
   });
+});
+
+app.post('/save-file-details', requiresLogin, (req, res) => {
+  const params = [req.user.id, req.body.filename, req.body.filekey, req.body.filetype];
+  db.newFile(params, () => {
+
+  });
+  res.end();
 });

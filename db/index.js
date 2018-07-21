@@ -34,6 +34,16 @@ module.exports = {
         });
         // });
     },
+    newFile: (params, callback) => {
+        console.log(params);
+        const queryStr = `INSERT INTO files (userid, filename, filekey, filetype, uploaded) values ($1, $2, $3, $4, now())`;
+        return pool.query(queryStr, params, (err, res) => {
+            if(err) {
+                console.log(err);
+            }
+            callback(err, res);
+        });
+    },
     end: () => {
         pool.end((err) => {
             if(err) {
