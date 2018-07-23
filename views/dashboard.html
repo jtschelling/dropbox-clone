@@ -5,7 +5,7 @@
           body {background-color: #eeeeee;}
       </style>
   </head>
-  <body>
+  <body onload="getUserFiles()">
     <div class="container">
       <h1>Dashboard</h1>
 
@@ -17,34 +17,16 @@
       
       <button type="submit" onclick="initUpload()">upload selected file</button>
 
-      <table class="table table-hover">
+      <table class="table table-hover" id="filetable">
         <thead>
           <tr>
             <th scope="col">Name</th>
             <th scope="col">Type</th>
-            <th scope="col">Date Uploaded</th>
             <th scope="col">Size</th>
+            <th scope="col">Date Uploaded</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <th scope="row">summer_resume</th>
-            <td>pdf</td>
-            <td>07/18/2018</td>
-            <td>102kb</td>
-          </tr>
-          <tr>
-            <th scope="row">the_room</th>
-            <td>mp4</td>
-            <td>06/24/2018</td>
-            <td>2.4Gb</td>
-          </tr>
-          <tr>
-            <th scope="row">this_page</th>
-            <td>html</td>
-            <td>07/07/2018</td>
-            <td>2kb</td>
-          </tr>
+        <tbody id="tabbody">
         </tbody>
       </table>
 
@@ -68,15 +50,64 @@
       xhr.send();
     }
 
+    function getUserFiles() {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', '/dashboard/userdata');
+      xhr.onreadystatechange = () => {
+        if(xhr.readyState === 4) {
+          if(xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            for( i = 0; i < response.length; i++) {
+              newFileRow(response[i].filename, response[i].filetype, "placeholder", response[i].uploaded);
+            }
+          } else {
+            alert('server error');
+          }
+        }
+      }
+      xhr.send();
+    }
+
+    function newFileRow(name, type, size, date) {
+      name = name.split(".")[0];
+      tablebody = document.getElementById("tabbody");
+      newrow = document.createElement("tr");
+      cell1 = document.createElement("th");
+      cell2 = document.createElement("td");
+      cell3 = document.createElement("td");
+      cell4 = document.createElement("td");
+      column1 = document.createTextNode(name);
+      column2 = document.createTextNode(type);
+      column3 = document.createTextNode(size);
+      column4 = document.createTextNode(date);
+      cell1.appendChild(column1);
+      cell2.appendChild(column2);
+      cell3.appendChild(column3);
+      cell4.appendChild(column4);
+      newrow.appendChild(cell1);
+      newrow.appendChild(cell2);
+      newrow.appendChild(cell3);
+      newrow.appendChild(cell4);
+      tablebody.appendChild(newrow);
+    }
+
     function saveDetails(file, fileKey){
-      console.log(`should have made it here...\n${file.name}`);
       const xhr = new XMLHttpRequest();
       xhr.open('POST', `/save-file-details`, true);
       xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
       xhr.onreadystatechange = () => {
           if(xhr.readyState === 4){
             if(xhr.status === 200){
-
+              var date = new Date();
+              var mm = date.getMonth() + 1;
+              var dd = date.getDate();
+              var yyyy = date.getFullYear();
+              if(mm < 10) {
+                var datestr = `0${mm}/${dd}/${yyyy}`;
+              } else {
+                var datestr = `${mm}/${dd}/${yyyy}`;
+              }  
+              newFileRow(file.name, file.type, file.size, datestr);
             }
             else{
               alert('could not update server');
@@ -91,7 +122,6 @@
     */
     function uploadFile(file, signedRequest, url, fileKey){
       const xhr = new XMLHttpRequest();
-      console.log(file);
       xhr.open('PUT', signedRequest);
       xhr.onreadystatechange = () => {
         if(xhr.readyState === 4){

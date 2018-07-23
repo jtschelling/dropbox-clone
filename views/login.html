@@ -27,7 +27,10 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <div class="col-4 offset-4">
+                            <div class="col-4">
+                                    <button type="button" class="btn btn-primary w-100" onclick="publicUser()">Public Demo</button>
+                            </div>
+                            <div class="col-4">
                                 <button type="button" class="btn btn-primary w-100" onclick="createAccount()">Create Account</button>
                             </div>
                             <div class="col-4">
@@ -41,6 +44,16 @@
     </div>
     
     <script>
+        /*
+         * listener for 'enter' keypress in password form focus
+         * 
+        */
+        document.getElementById("password").addEventListener("keydown", function(e){
+            if(e.keyCode == 13) {
+                authorizeUser();
+            }
+        })
+
         /*
         * sends a get request to /auth on the server
         * recieves a 200 on successful authentication
@@ -75,8 +88,47 @@
             xhr.send(`username=${username}&password=${password}`);
         }
 
+        function publicUser(){
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `/auth`, true);
+            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = () => {
+                if(xhr.readyState === 4){
+                    switch(xhr.status) {
+                        case 302:
+                            const response = JSON.parse(xhr.responseText);
+                            window.location.replace(response.url);
+                            break;
+                        case 401:
+                            alert('incorrect password or user not found');
+                            break;
+                        case 500:
+                            alert('server error');
+                            break;
+                        default:
+                            alert('unknown error');
+                    }
+                }
+            };
+            xhr.send(`username=public&password=password`);
+        }
+
         function createAccount() {
-            alert('create pressed');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `/newuser`, true);
+            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = () => {
+                if(xhr.readyState === 4){
+                    if(xhr.status === 200) {
+                        alert(`new user ${ username } created!`);
+                    } else {
+                        alert('error creating user');
+                    }
+                }
+            };
+            xhr.send(`username=${ username }&password=${ password }`);
         }
     </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
