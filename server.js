@@ -69,7 +69,7 @@ app.get('/logout', (req, res) => {
 });
 
 app.post('/newuser', (req, res) => {
-  if(req.body.username.length < 1 || req.body.password.length < 1) {
+  if (req.body.username.length < 1 || req.body.password.length < 1) {
     res.statusCode = 500;
     res.end();
   }
