@@ -68,6 +68,20 @@ app.get('/logout', (req, res) => {
   res.end();
 });
 
+app.post('/newuser', (req, res) => {
+  if (req.body.username.length < 1 || req.body.password.length < 1) {
+    res.statusCode = 500;
+    res.end();
+  }
+
+  const params = [req.body.username, req.body.password];
+  db.newUser(params, () => {
+
+  });
+  res.statusCode = 200;
+  res.end();
+});
+
 /*
   * User dashboard generated from postgres database
   * Values needed:  RefID for AWS S3 file
@@ -77,6 +91,15 @@ app.get('/logout', (req, res) => {
 */
 app.get('/dashboard', requiresLogin, (req, res) => {
   res.render('dashboard.html');
+});
+
+app.get('/dashboard/userdata', requiresLogin, (req, res) => {
+  const userid = req.user.id;
+  db.getUserFiles([userid], (dbres) => {
+    res.statusCode = 200;
+    res.send(dbres.rows);
+    res.end();
+  });
 });
 
 /*

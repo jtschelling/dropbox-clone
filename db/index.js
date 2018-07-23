@@ -6,19 +6,6 @@ const pool = new Pool({
 
 module.exports = {
     pool,
-    compare_pass: (username, password, callback) => {
-        pool.query(`SELECT * FROM users WHERE username=$1 AND password=crypt($2,password)`, [username, password], (err, res) => {
-            if (err) {
-                // eslint-disable-next-line
-                console.log(`${ err }\nOccurred in db.compare_pass()`);
-                callback({ code: -1 });
-            } else if (res.rows.length > 0) {
-                callback({ id: res.rows[0].id, username: res.rows[0].username, type: res.rows[0].type, code: 1});
-            } else {
-                callback({code: 0});
-            }
-        })
-    },
     query: (text, params, callback) => {
         // pool.connect((err, client, done) => {
         //     if(err) {
@@ -34,14 +21,44 @@ module.exports = {
         });
         // });
     },
+    compare_pass: (username, password, callback) => {
+        pool.query(`SELECT * FROM users WHERE username=$1 AND password=crypt($2,password)`, [username, password], (err, res) => {
+            if (err) {
+                // eslint-disable-next-line
+                console.log(`${ err }\nOccurred in db.compare_pass()`);
+                callback({ code: -1 });
+            } else if (res.rows.length > 0) {
+                callback({ id: res.rows[0].id, username: res.rows[0].username, type: res.rows[0].type, code: 1});
+            } else {
+                callback({code: 0});
+            }
+        })
+    },
+    getUserFiles: (params, callback) => {
+        const queryStr = `SELECT * FROM files WHERE files.userid = $1`;
+        return pool.query(queryStr, params, (err, res) => {
+            if(err) {
+                console.log(err);
+            }
+            callback(res);
+        });
+    },
     newFile: (params, callback) => {
-        console.log(params);
         const queryStr = `INSERT INTO files (userid, filename, filekey, filetype, uploaded) values ($1, $2, $3, $4, now())`;
         return pool.query(queryStr, params, (err, res) => {
             if(err) {
                 console.log(err);
             }
-            callback(err, res);
+            callback(res);
+        });
+    },
+    newUser: (params, callback) => {
+        const queryStr = `INSERT INTO users (username, password, type) values ($1, crypt($2, gen_salt('bf')), 'user')`;
+        return pool.query(queryStr, params, (err, res) => {
+            if(err) {
+                console.log(err);
+            }
+            callback(res);
         });
     },
     end: () => {

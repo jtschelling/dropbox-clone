@@ -7,7 +7,8 @@
     "name": "JT Schelling",
     "email": "jt@schelling.io"
   },
-  "license": "ISC",
+  "license": "UNLICENSED",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/jtschelling/dropbox-clone.git"
@@ -31,7 +32,7 @@
   },
   "dependencies": {
     "aws-sdk": "2.259.1",
-    "body-parser": "^1.18.3",
+    "body-parser": "1.18.3",
     "connect-pg-simple": "4.2.0",
     "cookie-parser": "1.4.3",
     "ejs": "2.6.1",
