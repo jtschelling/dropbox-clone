@@ -4,6 +4,7 @@ const express = require('express');
 const passport = require('passport');
 const { requiresLogin } = require('./config/middleware/authorization');
 const crypto = require('crypto');
+// const mime = require('mime');
 
 /*
   * TODO: clean up nicely on exit
@@ -76,10 +77,9 @@ app.post('/newuser', (req, res) => {
 
   const params = [req.body.username, req.body.password];
   db.newUser(params, () => {
-
+    res.statusCode = 200;
+    res.end();
   });
-  res.statusCode = 200;
-  res.end();
 });
 
 /*
@@ -122,7 +122,7 @@ app.post('/auth', passport.authenticate('local'), (req, res) => {
  * the anticipated URL of the image.
  *
 */
-app.get('/sign-s3', requiresLogin, (req, res) => {
+app.get('/sign-s3-put-request', requiresLogin, (req, res) => {
   const fileType = req.query['file-type'];
   const fileKey = crypto.randomBytes(8).toString('hex');
 
@@ -150,8 +150,37 @@ app.get('/sign-s3', requiresLogin, (req, res) => {
   });
 });
 
+app.get('/sign-s3-get-request', requiresLogin, (req, res) => {
+  const userid = req.user.id;
+  const filename = req.query['file-name'];
+
+  db.getFileKey([userid, filename], (keyres) => {
+    const s3Params = {
+      Bucket: S3_BUCKET,
+      Key: keyres.rows[0].filekey,
+      Expires: 60,
+    };
+
+    s3.getSignedUrl('getObject', s3Params, (err, data) => {
+      if (err) {
+        // eslint-disable-next-line
+        console.log(err);
+        res.end();
+      }
+      const returnData = {
+        signedRequest: data,
+        url: `https://${S3_BUCKET}.s3.amazonaws.com/${keyres.rows[0].filekey}`,
+      };
+      res.write(JSON.stringify(returnData));
+      res.end();
+    });
+  });
+});
+
 app.post('/save-file-details', requiresLogin, (req, res) => {
-  const params = [req.user.id, req.body.filename, req.body.filekey, req.body.filetype];
+  const params = [req.user.id, req.body.filename, req.body.filekey,
+    req.body.filetype, req.body.filesize];
+
   db.newFile(params, () => {
 
   });

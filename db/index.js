@@ -43,8 +43,17 @@ module.exports = {
             callback(res);
         });
     },
+    getFileKey: (params, callback) => {
+        const queryStr = `SELECT filekey, filetype, filesize FROM files WHERE userid=$1 AND filename=$2`;
+        return pool.query(queryStr, params, (err, res) => {
+            if(err) {
+                console.log(err);
+            }
+            callback(res);
+        })
+    },
     newFile: (params, callback) => {
-        const queryStr = `INSERT INTO files (userid, filename, filekey, filetype, uploaded) values ($1, $2, $3, $4, now())`;
+        const queryStr = `INSERT INTO files (userid, filename, filekey, filetype, uploaded, filesize) values ($1, $2, $3, $4, now(), $5)`;
         return pool.query(queryStr, params, (err, res) => {
             if(err) {
                 console.log(err);

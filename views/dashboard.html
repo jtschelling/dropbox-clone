@@ -14,16 +14,24 @@
       <form>
         <input type="file" id="file-input">
       </form>
-      
-      <button type="submit" onclick="initUpload()">upload selected file</button>
+      <div class="row">
+        <div class="col-3">
+          <button type="submit" class="btn btn-primary w-100" onclick="initUpload()">upload selected file</button>
+        </div>
+        <div class="col-3 offset-6">
+            <button type="button" class="btn btn-primary w-100" onclick="downloadSelected()">download selected</button>
+        </div>
+      </div>
+
 
       <table class="table table-hover" id="filetable">
         <thead>
           <tr>
+            <th data-field="state" data-radio="true"></th>
             <th scope="col">Name</th>
             <th scope="col">Type</th>
-            <th scope="col">Size</th>
             <th scope="col">Date Uploaded</th>
+            <th scope="col">Size</th>
           </tr>
         </thead>
         <tbody id="tabbody">
@@ -34,6 +42,49 @@
     </div>
 
     <script>
+
+    function downloadSelected() {
+      var files = [];
+      var checkedboxes = document.querySelectorAll(`input[type=checkbox]`);
+      for(var i = 0; i < checkedboxes.length; i++) {
+        if(checkedboxes[i].checked == true) {
+          files.push(checkedboxes[i].id);
+        } else {
+
+        }
+      }
+
+      if(files.length > 1) {
+        alert("sorry, mutliple file download is not ready");
+        return;
+      } else {
+        initDownload(files[0]);
+      }
+    }
+
+    function initDownload(filename) {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', `/sign-s3-get-request?file-name=${ filename }`);
+      xhr.onreadystatechange = () => {
+        if(xhr.readyState === 4) {
+          if(xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            startDownload(response.signedRequest, response.url);
+          }
+        }
+      }
+      xhr.send();
+    }
+
+    function startDownload(signedRequest, url) {
+      var link = document.createElement('a');
+      link.href = signedRequest;
+      link.setAttribute('download', 'download');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     function logoutUser() {
       const xhr = new XMLHttpRequest();
       xhr.open('GET', `/logout`);
@@ -57,8 +108,11 @@
         if(xhr.readyState === 4) {
           if(xhr.status === 200) {
             const response = JSON.parse(xhr.responseText);
-            for( i = 0; i < response.length; i++) {
-              newFileRow(response[i].filename, response[i].filetype, "placeholder", response[i].uploaded);
+            for(i = 0; i < response.length; i++) {
+              const uploaded = response[i].uploaded.split("T");
+              dateparsed = uploaded[0].split("-");
+              date = `${ dateparsed[1] }/${ dateparsed[2] }/${ dateparsed[0] }`;
+              newFileRow(response[i].filename, response[i].filetype, calcSize(response[i].filesize), date);
             }
           } else {
             alert('server error');
@@ -72,22 +126,38 @@
       name = name.split(".")[0];
       tablebody = document.getElementById("tabbody");
       newrow = document.createElement("tr");
-      cell1 = document.createElement("th");
+
+      checkboxholder = document.createElement("th");
+      cell1 = document.createElement("td");
       cell2 = document.createElement("td");
       cell3 = document.createElement("td");
       cell4 = document.createElement("td");
+
       column1 = document.createTextNode(name);
       column2 = document.createTextNode(type);
-      column3 = document.createTextNode(size);
-      column4 = document.createTextNode(date);
+      column3 = document.createTextNode(date);
+      column4 = document.createTextNode(size);
+      checkbox = document.createElement("input");
+      checkbox.setAttribute("type", "checkbox");
+      checkbox.setAttribute("id", `${ name }.${ type }`);
+
+      checkboxholder.appendChild(checkbox);
       cell1.appendChild(column1);
       cell2.appendChild(column2);
       cell3.appendChild(column3);
       cell4.appendChild(column4);
+      cell4.style.textAlign = "right";
+
+      newrow.appendChild(checkboxholder);
       newrow.appendChild(cell1);
       newrow.appendChild(cell2);
       newrow.appendChild(cell3);
       newrow.appendChild(cell4);
+      newrow.onclick = function () {
+        var boxlistener = document.getElementById(`${ name }.${ type }`);
+        if(boxlistener.checked) boxlistener.checked = false;
+        else boxlistener.checked = true;
+      };
       tablebody.appendChild(newrow);
     }
 
@@ -107,14 +177,14 @@
               } else {
                 var datestr = `${mm}/${dd}/${yyyy}`;
               }  
-              newFileRow(file.name, file.type, file.size, datestr);
+              newFileRow(file.name, file.name.split('.').pop(), calcSize(file.size), datestr);
             }
             else{
               alert('could not update server');
             }
           }
       };
-      xhr.send(`filename=${file.name}&filekey=${fileKey}&filetype=${file.type}&filesize=${file.size}`);
+      xhr.send(`filename=${file.name}&filekey=${fileKey}&filetype=${file.name.split('.').pop()}&filesize=${file.size}`);
     }
     
     /*
@@ -135,6 +205,7 @@
       };
       xhr.send(file);
     }
+
     /*
       Function to get the temporary signed request from the app.
       If request successful, continue to upload the file using this signed
@@ -142,7 +213,7 @@
     */
     function getSignedRequest(file){
       const xhr = new XMLHttpRequest();
-      xhr.open('GET', `/sign-s3?file-name=${file.name}&file-type=${file.type}`);
+      xhr.open('GET', `/sign-s3-put-request?file-name=${file.name}&file-type=${file.type}`);
       xhr.onreadystatechange = () => {
         if(xhr.readyState === 4){
           if(xhr.status === 200){
@@ -156,6 +227,7 @@
       };
       xhr.send();
     }
+    
     /*
      Function called when file input updated. If there is a file selected, then
      start upload procedure by asking for a signed request from the app.
@@ -167,6 +239,27 @@
         return alert('No file selected.');
       }
       getSignedRequest(file);
+    }
+
+    function calcSize(filesize) {
+      if(filesize > 1000000000) {
+        var gb = `${filesize / 1000000000}`;
+        var num = gb.split(".");
+        var decimal = num[1].substring(0,1);
+        return `${ num[0] }.${ decimal } GB`;
+      } else if(filesize > 1000000) {
+        var mb = `${filesize / 1000000}`;
+        var num = mb.split(".");
+        var decimal = num[1].substring(0,1);
+        return `${ num[0] }.${ decimal } MB`;
+      } else if(filesize > 1000) {
+        var kb = `${filesize / 1000}`;
+        var num = kb.split(".");
+        var decimal = num[1].substring(0,1);
+        return `${ num[0] }.${ decimal } KB`;
+      } else {
+        return filesize;
+      }
     }
     </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
