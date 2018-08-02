@@ -158,6 +158,7 @@ app.get('/sign-s3-get-request', requiresLogin, (req, res) => {
     const s3Params = {
       Bucket: S3_BUCKET,
       Key: keyres.rows[0].filekey,
+      ResponseContentDisposition: `attachment; filename=${filename}`,
       Expires: 60,
     };
 
