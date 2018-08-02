@@ -23,6 +23,7 @@
         </div>
       </div>
 
+      <br>
 
       <table class="table table-hover" id="filetable">
         <thead>
@@ -38,10 +39,22 @@
         </tbody>
       </table>
 
-      <button type="button" class="btn btn-primary" onclick="logoutUser()">Logout</button>
+      <div class="row">
+        <div class="col-2">
+          <button type="button" class="btn btn-primary w-100" onclick="logoutUser()">Logout</button>
+        </div>
+        <div class="col-2 offset-8">
+          <button type="button" class="btn btn-primary w-100" onclick="deleteSelectedFiles()">Delete Selected</button>
+        </div>
+      </div>
+      
     </div>
 
     <script>
+
+    function deleteSelectedFiles() {
+      alert("delete files feature not ready");
+    }
 
     function downloadSelected() {
       var files = [];
@@ -55,7 +68,10 @@
       }
 
       if(files.length > 1) {
-        alert("sorry, mutliple file download is not ready");
+        alert("mutliple file download feature not ready");
+        return;
+      } else if(files.length == 0) {
+        alert("no file selected");
         return;
       } else {
         initDownload(files[0]);
